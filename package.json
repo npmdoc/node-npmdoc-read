@@ -1,17 +1,40 @@
 {
-    "buildNpmdoc":"read",
+    "author": "kai zhu <kaizhu256@gmail.com>",
+    "buildNpmdoc": "read",
+    "description": "api documentation for [read (v1.0.7)](https://github.com/isaacs/read#readme) [![npm package](https://img.shields.io/npm/v/npmdoc-read.svg?style=flat-square)](https://www.npmjs.org/package/npmdoc-read) [![travis-ci.org build-status](https://api.travis-ci.org/npmdoc/node-npmdoc-read.svg)](https://travis-ci.org/npmdoc/node-npmdoc-read)",
     "devDependencies": {
-        "read": "*",
         "electron-lite": "kaizhu256/node-electron-lite#alpha",
+        "read": "*",
         "utility2": "kaizhu256/node-utility2#alpha"
     },
-    "name":"npmdoc-read",
+    "engines": {
+        "node": ">=4.0"
+    },
+    "homepage": "https://github.com/npmdoc/node-npmdoc-read",
+    "keywords": [
+        "documentation",
+        "read"
+    ],
+    "license": "MIT",
+    "main": "lib.npmdoc_read.js",
+    "name": "npmdoc-read",
+    "nameAlias": "npmdoc_read",
+    "nameOriginal": "npmdoc-read",
+    "os": [
+        "darwin",
+        "linux"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/npmdoc/node-npmdoc-read"
     },
     "scripts": {
-        "build-ci": "utility2 shReadmeTest build_ci.sh"
+        "build-ci": "utility2 shReadmeTest build_ci.sh",
+        "env": "env",
+        "heroku-postbuild": "(set -e; npm install \"kaizhu256/node-utility2#alpha\"; utility2 shDeployHeroku)",
+        "postinstall": "if [ -f npm_scripts.sh ]; then ./npm_scripts.sh postinstall; fi",
+        "start": "(set -e; export PORT=${PORT:-8080}; utility2 start test.js)",
+        "test": "(set -e; export PORT=$(utility2 shServerPortRandom); utility2 test test.js)"
     },
     "version": "0.0.1"
 }
