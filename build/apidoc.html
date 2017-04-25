@@ -61,12 +61,140 @@
 
     <li class="apidocModuleLi"><a href="#apidoc.module.read">module read</a><ol>
 
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.read.read">
+            function <span class="apidocSignatureSpan"></span>read
+            <span class="apidocSignatureSpan">(opts, cb)</span>
+            </a>
+
+        </li>
+
     </ol></li>
 
 </ol></div>
 
 <div class="apidocSectionDiv">
 <h1><a href="#apidoc.module.read" id="apidoc.module.read">module read</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.read.read" id="apidoc.element.read.read">
+        function <span class="apidocSignatureSpan"></span>read
+        <span class="apidocSignatureSpan">(opts, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function read(opts, cb) {
+  if (opts.num) {
+    throw new Error(&#x27;read() no longer accepts a char number limit&#x27;)
+  }
+
+  if (typeof opts.default !== &#x27;undefined&#x27; &#x26;&#x26;
+      typeof opts.default !== &#x27;string&#x27; &#x26;&#x26;
+      typeof opts.default !== &#x27;number&#x27;) {
+    throw new Error(&#x27;default value must be string or number&#x27;)
+  }
+
+  var input = opts.input || process.stdin
+  var output = opts.output || process.stdout
+  var prompt = (opts.prompt || &#x27;&#x27;).trim() + &#x27; &#x27;
+  var silent = opts.silent
+  var editDef = false
+  var timeout = opts.timeout
+
+  var def = opts.default || &#x27;&#x27;
+  if (def) {
+    if (silent) {
+      prompt += &#x27;(&#x3c;default hidden&#x3e;) &#x27;
+    } else if (opts.edit) {
+      editDef = true
+    } else {
+      prompt += &#x27;(&#x27; + def + &#x27;) &#x27;
+    }
+  }
+  var terminal = !!(opts.terminal || output.isTTY)
+
+  var m = new Mute({ replace: opts.replace, prompt: prompt })
+  m.pipe(output, {end: false})
+  output = m
+  var rlOpts = { input: input, output: output, terminal: terminal }
+
+  if (process.version.match(/^v0\.6/)) {
+    var rl = readline.createInterface(rlOpts.input, rlOpts.output)
+  } else {
+    var rl = readline.createInterface(rlOpts)
+  }
+
+
+  output.unmute()
+  rl.setPrompt(prompt)
+  rl.prompt()
+  if (silent) {
+    output.mute()
+  } else if (editDef) {
+    rl.line = def
+    rl.cursor = def.length
+    rl._refreshLine()
+  }
+
+  var called = false
+  rl.on(&#x27;line&#x27;, onLine)
+  rl.on(&#x27;error&#x27;, onError)
+
+  rl.on(&#x27;SIGINT&#x27;, function () {
+    rl.close()
+    onError(new Error(&#x27;canceled&#x27;))
+  })
+
+  var timer
+  if (timeout) {
+    timer = setTimeout(function () {
+      onError(new Error(&#x27;timed out&#x27;))
+    }, timeout)
+  }
+
+  function done () {
+    called = true
+    rl.close()
+
+    if (process.version.match(/^v0\.6/)) {
+      rl.input.removeAllListeners(&#x27;data&#x27;)
+      rl.input.removeAllListeners(&#x27;keypress&#x27;)
+      rl.input.pause()
+    }
+
+    clearTimeout(timer)
+    output.mute()
+    output.end()
+  }
+
+  function onError (er) {
+    if (called) return
+    done()
+    return cb(er)
+  }
+
+  function onLine (line) {
+    if (called) return
+    if (silent &#x26;&#x26; terminal) {
+      output.unmute()
+      output.write(&#x27;\r\n&#x27;)
+    }
+    done()
+    // truncate the \n at the end.
+    line = line.replace(/\r?\n$/, &#x27;&#x27;)
+    var isDefault = !!(editDef &#x26;&#x26; line === def)
+    if (def &#x26;&#x26; !line) {
+      isDefault = true
+      line = def
+    }
+    cb(null, line, isDefault)
+  }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
 
 </div>
 
